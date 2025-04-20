@@ -1,0 +1,9 @@
+directories:
+  mirror_module_path: True
+  subdirs:
+    raster_images: "images/raster"
+    vector_images: "images/vector"
+    downloads: "manim_downloads"
+
+window:
+  position_string: OO
