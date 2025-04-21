@@ -2,9 +2,13 @@ from manimlib import *
 from collections import deque
 
 # === ДАННЫЕ ДЛЯ ТРАНСПОРТНОЙ ЗАДАЧИ ===
-supply = [20, 30, 25]
-demand = [10, 25, 20, 20]
-cost_matrix = [[8, 6, 10, 9], [9, 7, 4, 2], [3, 4, 2, 5]]
+supply = [10, 8, 12]
+demand = [4, 11, 15]
+cost_matrix = [
+    [9, 3, 4], 
+    [2, 2, 3], 
+    [1, 7, 5]
+]
 
 
 class NorthwestCornerTransport(Scene):
@@ -104,7 +108,7 @@ class NorthwestCornerTransport(Scene):
             self.wait(1)
 
             # === Если нет отрицательных дельт — оптимум ===
-            entering = next(((i, j) for (i, j), d in deltas.items() if d < 0), None)
+            entering = next(((i, j) for (i, j), d in sorted(deltas.items(), key=lambda x: x[1]) if d < 0), None)
             if not entering:
                 break
 
