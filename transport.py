@@ -4,15 +4,15 @@ from collections import deque
 # === ДАННЫЕ ДЛЯ ТРАНСПОРТНОЙ ЗАДАЧИ ===
 supply = [20, 30, 25]
 demand = [10, 25, 20, 20]
-cost_matrix = [
-    [8, 6, 10, 9],
-    [9, 7, 4, 2],
-    [3, 4, 2, 5]
-]
+cost_matrix = [[8, 6, 10, 9], [9, 7, 4, 2], [3, 4, 2, 5]]
+
 
 class NorthwestCornerTransport(Scene):
     def show_total_cost(self, allocations, coords, cost_matrix, prev_label=None):
-        total_cost = sum(int(label.tex_string) * cost_matrix[i][j] for (i, j), label in allocations.items())
+        total_cost = sum(
+            int(label.tex_string) * cost_matrix[i][j]
+            for (i, j), label in allocations.items()
+        )
         cost_tex = Tex(f"Cost: {total_cost}").scale(0.7).to_corner(DOWN + RIGHT)
 
         if prev_label:
@@ -93,7 +93,11 @@ class NorthwestCornerTransport(Scene):
                     if (i, j) not in allocations:
                         delta = cost_matrix[i][j] - u[i] - v[j]
                         deltas[(i, j)] = delta
-                        text = Tex(f"\\Delta={delta}").scale(0.5).move_to(coords[(i, j)] + 0.3 * UP + 0.3 * LEFT)
+                        text = (
+                            Tex(f"\\Delta={delta}")
+                            .scale(0.5)
+                            .move_to(coords[(i, j)] + 0.3 * UP + 0.3 * LEFT)
+                        )
                         text.set_color(RED if delta < 0 else GREY)
                         delta_texts.add(text)
             self.play(Write(delta_texts))
@@ -116,7 +120,7 @@ class NorthwestCornerTransport(Scene):
                     neighbors = []
                     visited_set = set(visited)
 
-                    for (ii, jj) in allocations:
+                    for ii, jj in allocations:
                         if (ii, jj) in visited_set or (ii, jj) == pos:
                             continue
                         if is_row and ii == i:
@@ -161,7 +165,11 @@ class NorthwestCornerTransport(Scene):
 
             # === Применение оптимизации ===
             signs = [1 if i % 2 == 0 else -1 for i in range(len(cycle))]
-            minus_vals = [int(allocations[idx].tex_string) for idx, s in zip(cycle, signs) if s == -1]
+            minus_vals = [
+                int(allocations[idx].tex_string)
+                for idx, s in zip(cycle, signs)
+                if s == -1
+            ]
             theta = min(minus_vals)
 
             for idx, sign in zip(cycle, signs):
@@ -171,7 +179,12 @@ class NorthwestCornerTransport(Scene):
                     new_val = old_val + sign * theta
                     self.play(FadeOut(label))
                     if new_val > 0:
-                        new_label = Tex(f"{new_val}").set_color(GREEN).scale(0.7).move_to(label.get_center())
+                        new_label = (
+                            Tex(f"{new_val}")
+                            .set_color(GREEN)
+                            .scale(0.7)
+                            .move_to(label.get_center())
+                        )
                         allocations[idx] = new_label
                         self.play(Write(new_label))
                     else:
@@ -182,9 +195,10 @@ class NorthwestCornerTransport(Scene):
                     allocations[idx] = new_label
                     self.play(Write(new_label))
 
-            cost_label = self.show_total_cost(allocations, coords, cost_matrix, cost_label)
+            cost_label = self.show_total_cost(
+                allocations, coords, cost_matrix, cost_label
+            )
             self.wait(1)
             self.play(FadeOut(highlight), FadeOut(arrows), FadeOut(delta_texts))
 
-        
         self.wait(3)
