@@ -38,7 +38,7 @@ def create_vertices(pos):
         name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
     }  # Синие точки для вершин
     # Подписи для каждой вершины
-    lbls = {name: Tex(name).next_to(verts[name], DOWN) for name in labels}
+    lbls = {name: Tex(name).next_to(pos[name] * 1.15, ORIGIN) for name in labels}
     return verts, lbls
 
 
