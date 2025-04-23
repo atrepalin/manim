@@ -1,0 +1,29 @@
+{
+"version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Manim File",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "manimlib",
+            "args": ["${file}", "${input:configType}"],
+            "console": "integratedTerminal"
+        },
+    ],
+    "inputs": [
+    {
+      "id": "configType",
+      "type": "command",
+      "command": "extension.commandvariable.pickStringRemember",
+      "args": {
+        "description": "Which config do you want?",
+        "options": [
+          ["skip animations", "-s"],
+          ["render to file", "-w"],
+          ["live preview", ""]
+        ],
+        "default": ""
+      }
+    }
+  ]
+}
