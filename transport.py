@@ -17,7 +17,7 @@ class NorthwestCornerTransport(Scene):
             int(label.tex_string) * cost_matrix[i][j]
             for (i, j), label in allocations.items()
         )
-        cost_tex = Tex(f"Cost: {total_cost}").scale(0.7).to_corner(DOWN + RIGHT)
+        cost_tex = Tex(f"\\text{{Цена: }} {total_cost}").scale(0.7).to_corner(DOWN + RIGHT)
 
         if prev_label:
             self.play(FadeOut(prev_label))

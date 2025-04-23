@@ -1,0 +1,47 @@
+Установить пакет cm-super
+
+Изменить manimlib\tex_templates.yml
+
+default:
+  description: ""
+  compiler: latex
+  preamble: |-
+    \usepackage[english,russian]{babel}
+    \usepackage[utf8]{inputenc}
+    \usepackage[T1]{fontenc}
+    \usepackage{amsmath}
+    \usepackage{amssymb}
+    \usepackage{dsfont}
+    \usepackage{setspace}
+    \usepackage{tipa}
+    \usepackage{relsize}
+    \usepackage{textcomp}
+    \usepackage{mathrsfs}
+    \usepackage{calligra}
+    \usepackage{wasysym}
+    \usepackage{ragged2e}
+    \usepackage{physics}
+    \usepackage{xcolor}
+    \usepackage{microtype}
+    \usepackage{pifont}
+    \DisableLigatures{encoding = *, family = * }
+    \linespread{1}
+
+Изменить manimlib\utils\tex_file_writing.py
+
+# Write tex file
+tex_path.write_text(full_tex, encoding="utf-8")
+
+# Run latex compiler
+process = subprocess.run(
+    [
+        compiler,
+        # "-no-pdf",
+        "-interaction=batchmode",
+        "-halt-on-error",
+        f"-output-directory={temp_dir}",
+        tex_path
+    ],
+    capture_output=True,
+    text=True
+)

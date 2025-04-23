@@ -77,7 +77,7 @@ class FordFulkersonFromAdjacency(Scene):
         # Трекер для отображения текущего значения потока
         max_flow_tracker = ValueTracker(0)
         max_flow_label = always_redraw(
-            lambda: Tex(f"Flow: {int(max_flow_tracker.get_value())}").to_corner(UL)
+            lambda: Tex(f"\\text{{Максимальный поток: }} {int(max_flow_tracker.get_value())}").to_corner(UL)
         )
         self.add(max_flow_label)
 
