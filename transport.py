@@ -2,12 +2,12 @@ from manimlib import *
 from collections import deque
 
 # === ДАННЫЕ ДЛЯ ТРАНСПОРТНОЙ ЗАДАЧИ ===
-supply = [10, 8, 12]
-demand = [4, 11, 15]
+supply = [20, 30, 25]
+demand = [10, 25, 20, 20]
 cost_matrix = [
-    [9, 3, 4], 
-    [2, 2, 3], 
-    [1, 7, 5]
+    [8, 6, 10, 9],
+    [9, 7, 4, 2],
+    [3, 4, 2, 5]
 ]
 
 
@@ -29,9 +29,22 @@ class NorthwestCornerTransport(Scene):
 
         # === Сетка ===
         table = VGroup()
+        labels = VGroup()
         cell_w, cell_h = 1.5, 1.2
         top_left = 3 * UP + 5 * LEFT
         coords = {}
+
+        for i in range(m + 1):
+            for j in range(n + 1):
+                pos = top_left + j * cell_w * RIGHT + i * cell_h * DOWN
+                rect = Rectangle(width=cell_w, height=cell_h, stroke_width=0.8).move_to(pos)
+                table.add(rect)
+                coords[(i, j)] = pos
+
+        self.play(FadeIn(table))
+        self.wait(0.5)
+
+        total = sum(demand)
 
         for i in range(m + 1):
             for j in range(n + 1):
@@ -42,13 +55,13 @@ class NorthwestCornerTransport(Scene):
                 elif j == n and i < m:
                     label = Tex(f"{supply[i]}")
                 else:
-                    label = Tex("")
+                    label = Tex(f"\\Sigma = {total}").scale(0.7)
                 pos = top_left + j * cell_w * RIGHT + i * cell_h * DOWN
                 label.move_to(pos)
-                table.add(label)
+                labels.add(label)
                 coords[(i, j)] = pos
 
-        self.play(Write(table))
+        self.play(Write(labels))
         self.wait(1)
 
         # === Северо-западный угол ===
@@ -89,6 +102,34 @@ class NorthwestCornerTransport(Scene):
                     elif v[j] is not None and u[i] is None:
                         u[i] = cost_matrix[i][j] - v[j]
 
+            # === Потенциалы строк и столбцов ===
+            potentials = VGroup()
+
+            for i in range(m):
+                pos = top_left + n * cell_w * RIGHT + i * cell_h * DOWN
+
+                text = (
+                    Tex(f"{u[i]}")
+                    .scale(0.5)
+                    .move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
+                )
+                text.set_color(BLUE)
+                potentials.add(text)
+
+            for j in range(n):
+                pos = top_left + j * cell_w * RIGHT + m * cell_h * DOWN
+
+                text = (
+                    Tex(f"{v[j]}")
+                    .scale(0.5)
+                    .move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
+                )
+                text.set_color(BLUE)
+                potentials.add(text)
+            
+            self.play(Write(potentials))
+            self.wait(1)
+
             # === Дельты ===
             delta_texts = VGroup()
             deltas = {}
@@ -98,7 +139,7 @@ class NorthwestCornerTransport(Scene):
                         delta = cost_matrix[i][j] - u[i] - v[j]
                         deltas[(i, j)] = delta
                         text = (
-                            Tex(f"\\Delta={delta}")
+                            Tex(f"\\phi={delta}")
                             .scale(0.5)
                             .move_to(coords[(i, j)] + 0.3 * UP + 0.3 * LEFT)
                         )
@@ -203,6 +244,8 @@ class NorthwestCornerTransport(Scene):
                 allocations, coords, cost_matrix, cost_label
             )
             self.wait(1)
-            self.play(FadeOut(highlight), FadeOut(arrows), FadeOut(delta_texts))
+            self.play(FadeOut(highlight), FadeOut(arrows), FadeOut(delta_texts), FadeOut(potentials))
+
+        self.play(cost_label.animate.set_color(GREEN))
 
         self.wait(3)
