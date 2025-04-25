@@ -96,14 +96,15 @@ class KruskalFromAdjacency(Scene):
         def union(u, v):
             parent[find(u)] = find(v)
 
-        # Трекер для отслеживания стоимости минимального остова
-        cost_tracker = ValueTracker(0)
-        cost_label = always_redraw(
-            lambda: Tex(f"\\text{{Вес: }} {int(cost_tracker.get_value())}").to_corner(
+        weight_tracker = ValueTracker(0)  # Трекер веса
+
+        def get_label():
+            return Tex(f"\\text{{Вес: }} {int(weight_tracker.get_value())}").to_corner(
                 UP + LEFT
-            )  # Обновляем метку стоимости
-        )
-        self.add(cost_label)
+            )  # Обновляем метку веса
+
+        weight_label = always_redraw(get_label)
+        self.add(weight_label)
 
         # Основной цикл алгоритма Краскала
         for w, line, (u, v), _ in edges:
@@ -127,18 +128,18 @@ class KruskalFromAdjacency(Scene):
                 self.play(FadeOut(union_txt))  # Убираем подсказку
                 union(u, v)  # Объединяем компоненты
                 self.play(
-                    line.animate.set_color(
-                        GREEN
-                    ),  # Окрашиваем ребро в зелёный цвет (включаем в остов)
-                    cost_tracker.animate.set_value(
-                        cost_tracker.get_value() + w
-                    ),  # Обновляем стоимость
+                    line.animate.set_color(GREEN),
+                    weight_tracker.animate.set_value(weight_tracker.get_value() + w),
                     run_time=0.5,
                 )
             else:  # Если вершины уже в одной компоненте
                 self.play(
                     line.animate.set_color(RED), run_time=0.3
                 )  # Окрашиваем ребро в красный (не включаем в остов)
+
+        final = get_label()
+
+        self.play(FadeTransform(weight_label, final), final.animate.set_color(GREEN))
         self.wait(2)
 
 
@@ -164,13 +165,15 @@ class PrimFromAdjacency(Scene):
         visited = {start}  # Множество посещённых вершин
         verts[start].set_fill(YELLOW, opacity=0.5)  # Окрасим вершину в жёлтый
 
-        cost_tracker = ValueTracker(0)  # Трекер стоимости
-        cost_label = always_redraw(
-            lambda: Tex(f"\\text{{Вес: }} {int(cost_tracker.get_value())}").to_corner(
+        weight_tracker = ValueTracker(0)  # Трекер веса
+
+        def get_label():
+            return Tex(f"\\text{{Вес: }} {int(weight_tracker.get_value())}").to_corner(
                 UP + LEFT
-            )  # Обновляем метку стоимости
-        )
-        self.add(cost_label)
+            )  # Обновляем метку веса
+
+        weight_label = always_redraw(get_label)
+        self.add(weight_label)
 
         # Формирование начального фронтира (рёбер, выходящих из вершины A)
         frontier = [e for e in edges if e[2][0] == start or e[2][1] == start]
@@ -192,7 +195,7 @@ class PrimFromAdjacency(Scene):
             # Добавляем ребро в остов
             self.play(
                 line.animate.set_color(GREEN),
-                cost_tracker.animate.set_value(cost_tracker.get_value() + w),
+                weight_tracker.animate.set_value(weight_tracker.get_value() + w),
                 run_time=0.5,
             )
             # Обновляем посещённость и фронтир
@@ -205,4 +208,9 @@ class PrimFromAdjacency(Scene):
                         e
                     )  # Добавляем рёбра, которые соединяют посещённые и непосещённые вершины
             frontier.sort(key=lambda x: x[0])  # Сортируем фронтир по весу рёбер
+
+
+        final = get_label()
+
+        self.play(FadeTransform(weight_label, final), final.animate.set_color(GREEN))
         self.wait(2)
