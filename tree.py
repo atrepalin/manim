@@ -99,7 +99,7 @@ class KruskalFromAdjacency(Scene):
         # Трекер для отслеживания стоимости минимального остова
         cost_tracker = ValueTracker(0)
         cost_label = always_redraw(
-            lambda: Tex(f"\\text{{Цена: }} {int(cost_tracker.get_value())}").to_corner(
+            lambda: Tex(f"\\text{{Вес: }} {int(cost_tracker.get_value())}").to_corner(
                 UP + LEFT
             )  # Обновляем метку стоимости
         )
@@ -166,7 +166,7 @@ class PrimFromAdjacency(Scene):
 
         cost_tracker = ValueTracker(0)  # Трекер стоимости
         cost_label = always_redraw(
-            lambda: Tex(f"\\text{{Цена: }} {int(cost_tracker.get_value())}").to_corner(
+            lambda: Tex(f"\\text{{Вес: }} {int(cost_tracker.get_value())}").to_corner(
                 UP + LEFT
             )  # Обновляем метку стоимости
         )
