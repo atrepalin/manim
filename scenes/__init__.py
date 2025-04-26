@@ -6,5 +6,5 @@ scenes = {
     "flow": FordFulkersonFromAdjacency,
     "transport": NorthwestCornerTransport,
     "mst_prim": PrimFromAdjacency,
-    "mst_kruskal": KruskalFromAdjacency
+    "mst_kruskal": KruskalFromAdjacency,
 }

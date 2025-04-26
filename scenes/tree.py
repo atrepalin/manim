@@ -1,6 +1,7 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
 import numpy as np  # Импорт библиотеки NumPy для работы с массивами и математическими вычислениями
 
+
 # Функция для вычисления позиций вершин по кругу
 def compute_positions(n, labels, radius=3):
     angle_step = TAU / n  # Угол между соседними вершинами на окружности
@@ -50,10 +51,9 @@ class KruskalFromAdjacency(Scene):
         super().__init__(**kwargs)
 
         self.adjacency_matrix = adjacency_matrix
-        
+
         self.n = len(adjacency_matrix)  # Количество вершин в графе
         self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
-
 
     def construct(self):
         pos = compute_positions(self.n, self.labels)  # Вычисляем позиции вершин
@@ -62,7 +62,9 @@ class KruskalFromAdjacency(Scene):
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(self.n, self.labels, self.adjacency_matrix, pos)  # Создаём рёбра
+        edges = create_edges(
+            self.n, self.labels, self.adjacency_matrix, pos
+        )  # Создаём рёбра
         # Показ всех рёбер и весов
         for w, line, (_, _), weight_label in edges:
             self.play(
@@ -140,10 +142,9 @@ class PrimFromAdjacency(Scene):
         super().__init__(**kwargs)
 
         self.adjacency_matrix = adjacency_matrix
-        
+
         self.n = len(adjacency_matrix)  # Количество вершин в графе
         self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
-
 
     def construct(self):
         pos = compute_positions(self.n, self.labels)  # Вычисляем позиции вершин
@@ -152,7 +153,9 @@ class PrimFromAdjacency(Scene):
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(self.n, self.labels, self.adjacency_matrix, pos)  # Создаём рёбра
+        edges = create_edges(
+            self.n, self.labels, self.adjacency_matrix, pos
+        )  # Создаём рёбра
         # Показ всех рёбер и весов
         for w, line, (_, _), weight_label in edges:
             self.play(
@@ -208,7 +211,6 @@ class PrimFromAdjacency(Scene):
                         e
                     )  # Добавляем рёбра, которые соединяют посещённые и непосещённые вершины
             frontier.sort(key=lambda x: x[0])  # Сортируем фронтир по весу рёбер
-
 
         final = get_label()
 

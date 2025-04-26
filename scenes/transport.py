@@ -17,7 +17,9 @@ class NorthwestCornerTransport(Scene):
             int(label.tex_string) * cost_matrix[i][j]
             for (i, j), label in allocations.items()
         )
-        cost_tex = Tex(f"\\text{{Цена: }} {total_cost}").scale(0.7).to_corner(DOWN + RIGHT)
+        cost_tex = (
+            Tex(f"\\text{{Цена: }} {total_cost}").scale(0.7).to_corner(DOWN + RIGHT)
+        )
 
         if prev_label:
             self.play(FadeOut(prev_label))
@@ -37,7 +39,9 @@ class NorthwestCornerTransport(Scene):
         for i in range(m + 1):
             for j in range(n + 1):
                 pos = top_left + j * cell_w * RIGHT + i * cell_h * DOWN
-                rect = Rectangle(width=cell_w, height=cell_h, stroke_width=0.8).move_to(pos)
+                rect = Rectangle(width=cell_w, height=cell_h, stroke_width=0.8).move_to(
+                    pos
+                )
                 table.add(rect)
                 coords[(i, j)] = pos
 
@@ -108,25 +112,17 @@ class NorthwestCornerTransport(Scene):
             for i in range(m):
                 pos = top_left + n * cell_w * RIGHT + i * cell_h * DOWN
 
-                text = (
-                    Tex(f"{u[i]}")
-                    .scale(0.5)
-                    .move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
-                )
+                text = Tex(f"{u[i]}").scale(0.5).move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
                 text.set_color(BLUE)
                 potentials.add(text)
 
             for j in range(n):
                 pos = top_left + j * cell_w * RIGHT + m * cell_h * DOWN
 
-                text = (
-                    Tex(f"{v[j]}")
-                    .scale(0.5)
-                    .move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
-                )
+                text = Tex(f"{v[j]}").scale(0.5).move_to(pos + 0.4 * DOWN + 0.5 * RIGHT)
                 text.set_color(BLUE)
                 potentials.add(text)
-            
+
             self.play(Write(potentials))
             self.wait(1)
 
@@ -149,7 +145,14 @@ class NorthwestCornerTransport(Scene):
             self.wait(1)
 
             # === Если нет отрицательных дельт — оптимум ===
-            entering = next(((i, j) for (i, j), d in sorted(deltas.items(), key=lambda x: x[1]) if d < 0), None)
+            entering = next(
+                (
+                    (i, j)
+                    for (i, j), d in sorted(deltas.items(), key=lambda x: x[1])
+                    if d < 0
+                ),
+                None,
+            )
             if not entering:
                 break
 
@@ -244,7 +247,12 @@ class NorthwestCornerTransport(Scene):
                 allocations, coords, self.cost_matrix, cost_label
             )
             self.wait(1)
-            self.play(FadeOut(highlight), FadeOut(arrows), FadeOut(delta_texts), FadeOut(potentials))
+            self.play(
+                FadeOut(highlight),
+                FadeOut(arrows),
+                FadeOut(delta_texts),
+                FadeOut(potentials),
+            )
 
         self.play(cost_label.animate.set_color(GREEN))
 

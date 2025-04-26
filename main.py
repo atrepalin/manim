@@ -324,7 +324,7 @@ class App(TkinterDnD.Tk):
                 matrix.append(parts)
 
         return matrix
-    
+
     def load_example(self):
         try:
             matrix = examples[self.selected_task]

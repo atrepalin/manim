@@ -1,6 +1,7 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
 import numpy as np  # Импорт библиотеки NumPy для работы с векторами и массивами
 
+
 # Функция для вычисления позиций вершин по кругу
 def compute_positions(n, labels, radius=3):
     angle_step = TAU / n  # Угол между соседними вершинами на окружности
@@ -71,7 +72,9 @@ class FordFulkersonFromAdjacency(Scene):
         # Трекер для отображения текущего значения потока
         max_flow_tracker = ValueTracker(0)
         max_flow_label = always_redraw(
-            lambda: Tex(f"\\text{{Максимальный поток: }} {int(max_flow_tracker.get_value())}").to_corner(UL)
+            lambda: Tex(
+                f"\\text{{Максимальный поток: }} {int(max_flow_tracker.get_value())}"
+            ).to_corner(UL)
         )
         self.add(max_flow_label)
 
