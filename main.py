@@ -153,12 +153,15 @@ class App(TkinterDnD.Tk):
         if not render_to_file:
             self.withdraw()
 
-        run(
-            scenes[self.selected_task],
-            matrix,
-            skip_animations=skip_animations,
-            render_to_file=render_to_file,
-        )
+        try:
+            run(
+                scenes[self.selected_task],
+                matrix,
+                skip_animations=skip_animations,
+                render_to_file=render_to_file,
+            )
+        except Exception as e:
+            self.show_status(f"Ошибка выполнения: {e}", color="red")
 
         if not render_to_file:
             self.deiconify()

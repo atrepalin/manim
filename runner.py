@@ -40,7 +40,10 @@ def run(cls: Type[Scene], *args, skip_animations=False, render_to_file=False, **
 
     scene: Scene = cls(*args, **kwargs, **d)
 
-    scene.run()
-
-    if "window" in d and (window := d["window"]):
-        window.close()
+    try:
+        scene.run()
+    except Exception as e:
+        raise e
+    finally:
+        if "window" in d and (window := d["window"]):
+            window.close()
