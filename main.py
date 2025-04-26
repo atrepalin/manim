@@ -4,6 +4,10 @@ from tkinter import ttk, filedialog
 import pandas as pd
 from tkinterdnd2 import DND_FILES, TkinterDnD
 import ast
+from scenes import scenes
+from runner import run
+from examples import examples
+from functools import partial
 
 
 class App(TkinterDnD.Tk):
@@ -103,6 +107,9 @@ class App(TkinterDnD.Tk):
         load_controls.pack(pady=10)
 
         ttk.Button(
+            load_controls, text="Загрузить пример", command=self.load_example
+        ).pack(side="left", padx=5)
+        ttk.Button(
             load_controls, text="Загрузить из буфера", command=self.load_from_clipboard
         ).pack(side="left", padx=5)
         ttk.Button(
@@ -115,11 +122,46 @@ class App(TkinterDnD.Tk):
         self.table_frame = ttk.Frame(self.center_frame)
         self.table_frame.pack(fill="both", expand=True, pady=10)
 
+        self.runner_frame = ttk.Frame(self.center_frame)
+        self.runner_frame.pack(pady=10)
+
+        ttk.Button(
+            self.runner_frame,
+            text="Запустить алгоритм",
+            command=partial(self.run_algorithm, False, False),
+        ).pack(side="left", padx=5)
+        ttk.Button(
+            self.runner_frame,
+            text="Запустить с пропуском анимации",
+            command=partial(self.run_algorithm, True, False),
+        ).pack(side="left", padx=5)
+        ttk.Button(
+            self.runner_frame,
+            text="Сохранить в файл",
+            command=partial(self.run_algorithm, False, True),
+        ).pack(side="left", padx=5)
+
         self.rows = 3
         self.cols = 3
         self.entries = []
 
         self.build_table()
+
+    def run_algorithm(self, skip_animations, render_to_file):
+        matrix = self.get_matrix()
+
+        if not render_to_file:
+            self.withdraw()
+
+        run(
+            scenes[self.selected_task],
+            matrix,
+            skip_animations=skip_animations,
+            render_to_file=render_to_file,
+        )
+
+        if not render_to_file:
+            self.deiconify()
 
     def save_data(self):
         data = []
@@ -129,6 +171,17 @@ class App(TkinterDnD.Tk):
                 data_row.append(entry.get() if entry else "")
             data.append(data_row)
         return data
+
+    def get_matrix(self):
+        data = self.save_data()
+
+        def parse_int(x):
+            try:
+                return int(x)
+            except ValueError:
+                return 0
+
+        return [[parse_int(x) for x in row] for row in data]
 
     def build_table(self, saved_data=None):
         for widget in self.table_frame.winfo_children():
@@ -271,6 +324,18 @@ class App(TkinterDnD.Tk):
                 matrix.append(parts)
 
         return matrix
+    
+    def load_example(self):
+        try:
+            matrix = examples[self.selected_task]
+
+            self.validate_matrix(matrix)
+            self.rows = len(matrix)
+            self.cols = max(len(r) for r in matrix)
+            self.build_table(matrix)
+            self.show_status("Пример загружен")
+        except Exception as e:
+            self.show_status(f"Ошибка загрузки: {e}", color="red")
 
     def load_from_clipboard(self):
         try:
@@ -320,7 +385,7 @@ class App(TkinterDnD.Tk):
                 if value.strip() == "":
                     continue
                 try:
-                    float(value)
+                    int(value)
                 except ValueError:
                     raise ValueError(
                         f"Недопустимое значение '{value}', должно быть числом!"
@@ -345,7 +410,7 @@ class App(TkinterDnD.Tk):
             return
 
         try:
-            float(value)
+            int(value)
             entry.config(foreground="black")
         except ValueError:
             entry.config(foreground="red")
