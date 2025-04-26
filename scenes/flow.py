@@ -1,59 +1,53 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
 import numpy as np  # Импорт библиотеки NumPy для работы с векторами и массивами
 
-# === Исходные данные для ориентированного графа ===
-
-# Матрица смежности, где значение > 0 означает наличие ребра с заданной пропускной способностью
-adjacency_matrix = [
-    [0, 10, 5, 15, 0, 0, 0, 0],
-    [0, 0, 4, 0, 9, 15, 0, 0],
-    [0, 0, 0, 0, 4, 8, 0, 0],
-    [0, 0, 0, 0, 0, 0, 16, 0],
-    [0, 0, 0, 0, 0, 0, 0, 10],
-    [0, 0, 0, 0, 0, 0, 0, 10],
-    [0, 0, 0, 0, 0, 0, 0, 10],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-]
-
-n = len(adjacency_matrix)  # Количество вершин в графе
-labels = [f"X_{{{i+1}}}" for i in range(n)]
-
-
-# === Расположение вершин по окружности ===
-def compute_positions(radius=3):
-    angle_step = TAU / n  # Угол между вершинами
+# Функция для вычисления позиций вершин по кругу
+def compute_positions(n, labels, radius=3):
+    angle_step = TAU / n  # Угол между соседними вершинами на окружности
     return {
         labels[i]: radius
-        * np.array([np.cos(i * angle_step), np.sin(i * angle_step), 0])
+        * np.array(
+            [np.cos(i * angle_step), np.sin(i * angle_step), 0]
+        )  # Позиция вершины в 3D-пространстве (X, Y, Z)
         for i in range(n)
     }
 
 
-# === Создание объектов-вершин и подписей ===
-def create_vertices(pos):
-    # Синие точки
-    verts = {name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels}
-    # Подписи для каждой точки
+# Функция для создания объектов-вершин и подписей к ним
+def create_vertices(labels, pos):
+    # Создание точек (вершин) на основе вычисленных позиций
+    verts = {
+        name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
+    }  # Синие точки для вершин
+    # Подписи для каждой вершины
     lbls = {name: Tex(name).next_to(pos[name] * 1.15, ORIGIN) for name in labels}
     return verts, lbls
 
 
 # === Основной класс сцены с анимацией алгоритма Форда-Фалкерсона ===
 class FordFulkersonFromAdjacency(Scene):
+    def __init__(self, adjacency_matrix, **kwargs):
+        super().__init__(**kwargs)
+
+        self.adjacency_matrix = adjacency_matrix
+
+        self.n = len(adjacency_matrix)  # Количество вершин в графе
+        self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
+
     def construct(self):
-        pos = compute_positions()  # Позиции вершин
-        verts, v_labels = create_vertices(pos)  # Вершины и подписи
+        pos = compute_positions(self.n, self.labels)  # Позиции вершин
+        verts, v_labels = create_vertices(self.labels, pos)  # Вершины и подписи
         self.add(*verts.values(), *v_labels.values())  # Отображение на сцене
 
         edges = []  # Список рёбер
         capacity = {}  # Словарь: (u, v) -> пропускная способность
 
         # Обработка матрицы смежности для создания рёбер
-        for i in range(n):
-            for j in range(n):
-                w = adjacency_matrix[i][j]
+        for i in range(self.n):
+            for j in range(self.n):
+                w = self.adjacency_matrix[i][j]
                 if w > 0:
-                    u, v = labels[i], labels[j]
+                    u, v = self.labels[i], self.labels[j]
                     line = Arrow(pos[u], pos[v], buff=0.15, fill_color=GREY)
                     label = (
                         Tex(f"0/{w}")
@@ -69,7 +63,7 @@ class FordFulkersonFromAdjacency(Scene):
         self.wait(1)
 
         # Источник и сток
-        source, sink = labels[0], labels[-1]
+        source, sink = self.labels[0], self.labels[-1]
 
         flow = {key: 0 for key in capacity}  # Начальный поток на всех рёбрах — 0
         max_flow = 0  # Общий поток через сеть
@@ -88,7 +82,7 @@ class FordFulkersonFromAdjacency(Scene):
             queue = [source]
             while queue:
                 u = queue.pop(0)
-                for v in labels:
+                for v in self.labels:
                     # Условие: есть положительная остаточная ёмкость
                     if (
                         (u, v) in capacity
@@ -162,7 +156,7 @@ class FordFulkersonFromAdjacency(Scene):
         while queue:
             u = queue.pop(0)
             visited.add(u)
-            for v in labels:
+            for v in self.labels:
                 if (
                     (u, v) in capacity
                     and v not in visited
@@ -173,7 +167,7 @@ class FordFulkersonFromAdjacency(Scene):
         # Вершины по разные стороны разреза выделяются цветом
         for v in visited:
             verts[v].set_fill(BLUE, opacity=0.5)
-        for v in labels:
+        for v in self.labels:
             if v not in visited:
                 verts[v].set_fill(ORANGE, opacity=0.5)
 

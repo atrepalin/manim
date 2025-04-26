@@ -1,26 +1,8 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
 import numpy as np  # Импорт библиотеки NumPy для работы с массивами и математическими вычислениями
 
-# === Общие данные для графа ===
-# Матрица смежности для графа (независимо от того, ориентированный он или нет)
-# Строки и столбцы соответствуют вершинам графа
-adjacency_matrix = [
-    [0, 4, 3, 1, 0, 0, 0, 8],
-    [4, 0, 5, 2, 9, 0, 0, 0],
-    [3, 5, 0, 6, 0, 7, 0, 0],
-    [1, 2, 6, 0, 7, 3, 0, 0],
-    [0, 9, 0, 7, 0, 8, 5, 0],
-    [0, 0, 7, 3, 8, 0, 9, 0],
-    [0, 0, 0, 0, 5, 9, 0, 10],
-    [8, 0, 0, 0, 0, 0, 10, 0],
-]
-
-n = len(adjacency_matrix)  # Количество вершин в графе
-labels = [f"X_{{{i+1}}}" for i in range(n)]
-
-
 # Функция для вычисления позиций вершин по кругу
-def compute_positions(radius=3):
+def compute_positions(n, labels, radius=3):
     angle_step = TAU / n  # Угол между соседними вершинами на окружности
     return {
         labels[i]: radius
@@ -32,7 +14,7 @@ def compute_positions(radius=3):
 
 
 # Функция для создания объектов-вершин и подписей к ним
-def create_vertices(pos):
+def create_vertices(labels, pos):
     # Создание точек (вершин) на основе вычисленных позиций
     verts = {
         name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
@@ -43,7 +25,7 @@ def create_vertices(pos):
 
 
 # Функция для создания рёбер на основе матрицы смежности
-def create_edges(pos):
+def create_edges(n, labels, adjacency_matrix, pos):
     edges = []  # Список для хранения рёбер
     for i in range(n):
         for j in range(
@@ -64,14 +46,23 @@ def create_edges(pos):
 
 # Класс для анимации алгоритма Краскала
 class KruskalFromAdjacency(Scene):
+    def __init__(self, adjacency_matrix, **kwargs):
+        super().__init__(**kwargs)
+
+        self.adjacency_matrix = adjacency_matrix
+        
+        self.n = len(adjacency_matrix)  # Количество вершин в графе
+        self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
+
+
     def construct(self):
-        pos = compute_positions()  # Вычисляем позиции вершин
-        verts, v_labels = create_vertices(pos)  # Создаём вершины и подписи
+        pos = compute_positions(self.n, self.labels)  # Вычисляем позиции вершин
+        verts, v_labels = create_vertices(self.labels, pos)  # Создаём вершины и подписи
         self.add(
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(pos)  # Создаём рёбра
+        edges = create_edges(self.n, self.labels, self.adjacency_matrix, pos)  # Создаём рёбра
         # Показ всех рёбер и весов
         for w, line, (_, _), weight_label in edges:
             self.play(
@@ -83,7 +74,7 @@ class KruskalFromAdjacency(Scene):
         edges.sort(
             key=lambda x: x[0]
         )  # Сортируем рёбра по весу (от минимального к максимальному)
-        parent = {v: v for v in labels}  # Множество для хранения родителей вершин
+        parent = {v: v for v in self.labels}  # Множество для хранения родителей вершин
 
         # Функция поиска родителя вершины
         def find(v):
@@ -145,14 +136,23 @@ class KruskalFromAdjacency(Scene):
 
 # Класс для анимации алгоритма Прима
 class PrimFromAdjacency(Scene):
+    def __init__(self, adjacency_matrix, **kwargs):
+        super().__init__(**kwargs)
+
+        self.adjacency_matrix = adjacency_matrix
+        
+        self.n = len(adjacency_matrix)  # Количество вершин в графе
+        self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
+
+
     def construct(self):
-        pos = compute_positions()  # Вычисляем позиции вершин
-        verts, v_labels = create_vertices(pos)  # Создаём вершины и подписи
+        pos = compute_positions(self.n, self.labels)  # Вычисляем позиции вершин
+        verts, v_labels = create_vertices(self.labels, pos)  # Создаём вершины и подписи
         self.add(
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(pos)  # Создаём рёбра
+        edges = create_edges(self.n, self.labels, self.adjacency_matrix, pos)  # Создаём рёбра
         # Показ всех рёбер и весов
         for w, line, (_, _), weight_label in edges:
             self.play(
@@ -161,7 +161,7 @@ class PrimFromAdjacency(Scene):
         self.wait(1)
 
         # Инициализация алгоритма Прима
-        start = labels[0]  # Начинаем с вершины A
+        start = self.labels[0]  # Начинаем с вершины A
         visited = {start}  # Множество посещённых вершин
         verts[start].set_fill(YELLOW, opacity=0.5)  # Окрасим вершину в жёлтый
 
@@ -180,7 +180,7 @@ class PrimFromAdjacency(Scene):
         frontier.sort(key=lambda x: x[0])  # Сортируем рёбра по весу
 
         # Основной цикл алгоритма Прима
-        while len(visited) < n:
+        while len(visited) < self.n:
             w, line, (u, v), _ = frontier.pop(
                 0
             )  # Берём рёбра из фронтира (по наименьшему весу)

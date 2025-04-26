@@ -1,17 +1,17 @@
 from manimlib import *
 from collections import deque
 
-# === ДАННЫЕ ДЛЯ ТРАНСПОРТНОЙ ЗАДАЧИ ===
-supply = [20, 30, 25]
-demand = [10, 25, 20, 20]
-cost_matrix = [
-    [8, 6, 10, 9],
-    [9, 7, 4, 2],
-    [3, 4, 2, 5]
-]
-
 
 class NorthwestCornerTransport(Scene):
+    def __init__(self, matrix, **kwargs):
+        super().__init__(**kwargs)
+
+        matrix = np.array(matrix)
+
+        self.supply = matrix[:, -1][:-1]
+        self.demand = matrix[-1, 0:][:-1]
+        self.cost_matrix = matrix[:-1, :-1]
+
     def show_total_cost(self, allocations, coords, cost_matrix, prev_label=None):
         total_cost = sum(
             int(label.tex_string) * cost_matrix[i][j]
@@ -25,7 +25,7 @@ class NorthwestCornerTransport(Scene):
         return cost_tex
 
     def construct(self):
-        m, n = len(supply), len(demand)
+        m, n = len(self.supply), len(self.demand)
 
         # === Сетка ===
         table = VGroup()
@@ -44,16 +44,16 @@ class NorthwestCornerTransport(Scene):
         self.play(FadeIn(table))
         self.wait(0.5)
 
-        total = sum(demand)
+        total = sum(self.demand)
 
         for i in range(m + 1):
             for j in range(n + 1):
                 if i < m and j < n:
-                    label = Tex(f"{cost_matrix[i][j]}").scale(0.7)
+                    label = Tex(f"{self.cost_matrix[i][j]}").scale(0.7)
                 elif i == m and j < n:
-                    label = Tex(f"{demand[j]}")
+                    label = Tex(f"{self.demand[j]}")
                 elif j == n and i < m:
-                    label = Tex(f"{supply[i]}")
+                    label = Tex(f"{self.supply[i]}")
                 else:
                     label = Tex(f"\\Sigma = {total}").scale(0.7)
                 pos = top_left + j * cell_w * RIGHT + i * cell_h * DOWN
@@ -67,8 +67,8 @@ class NorthwestCornerTransport(Scene):
         # === Северо-западный угол ===
         i, j = 0, 0
         allocations = {}
-        curr_supply = supply.copy()
-        curr_demand = demand.copy()
+        curr_supply = self.supply.copy()
+        curr_demand = self.demand.copy()
 
         while i < m and j < n:
             amount = min(curr_supply[i], curr_demand[j])
@@ -87,7 +87,7 @@ class NorthwestCornerTransport(Scene):
 
         self.wait(1)
 
-        cost_label = self.show_total_cost(allocations, coords, cost_matrix)
+        cost_label = self.show_total_cost(allocations, coords, self.cost_matrix)
         self.wait(1)
 
         while True:
@@ -98,9 +98,9 @@ class NorthwestCornerTransport(Scene):
             while any(x is None for x in u) or any(x is None for x in v):
                 for i, j in basis:
                     if u[i] is not None and v[j] is None:
-                        v[j] = cost_matrix[i][j] - u[i]
+                        v[j] = self.cost_matrix[i][j] - u[i]
                     elif v[j] is not None and u[i] is None:
-                        u[i] = cost_matrix[i][j] - v[j]
+                        u[i] = self.cost_matrix[i][j] - v[j]
 
             # === Потенциалы строк и столбцов ===
             potentials = VGroup()
@@ -136,7 +136,7 @@ class NorthwestCornerTransport(Scene):
             for i in range(m):
                 for j in range(n):
                     if (i, j) not in allocations:
-                        delta = cost_matrix[i][j] - u[i] - v[j]
+                        delta = self.cost_matrix[i][j] - u[i] - v[j]
                         deltas[(i, j)] = delta
                         text = (
                             Tex(f"\\phi={delta}")
@@ -241,7 +241,7 @@ class NorthwestCornerTransport(Scene):
                     self.play(Write(new_label))
 
             cost_label = self.show_total_cost(
-                allocations, coords, cost_matrix, cost_label
+                allocations, coords, self.cost_matrix, cost_label
             )
             self.wait(1)
             self.play(FadeOut(highlight), FadeOut(arrows), FadeOut(delta_texts), FadeOut(potentials))
