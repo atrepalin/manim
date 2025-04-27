@@ -10,7 +10,35 @@ class NorthwestCornerTransport(Scene):
 
         self.supply = matrix[:, -1][:-1]
         self.demand = matrix[-1, 0:][:-1]
-        self.cost_matrix = matrix[:-1, :-1]
+
+        cost_matrix = matrix[:-1, :-1]
+
+        total_supply = sum(self.supply)
+        total_demand = sum(self.demand)
+
+        if total_supply > total_demand:
+            self.demand = np.append(self.demand, total_supply - total_demand)
+
+            extra = np.zeros((len(self.supply), 1), dtype=int)
+
+            self.cost_matrix = np.hstack((cost_matrix, extra))
+
+            self.has_extra_demand = True
+            self.has_extra_supply = False
+        elif total_supply < total_demand:
+            self.supply = np.append(self.supply, total_demand - total_supply)
+
+            extra = np.zeros((1, len(self.demand)), dtype=int)
+
+            self.cost_matrix = np.vstack((cost_matrix, extra))
+
+            self.has_extra_demand = False
+            self.has_extra_supply = True
+        else:
+            self.cost_matrix = cost_matrix
+
+            self.has_extra_demand = False
+            self.has_extra_supply = False
 
     def show_total_cost(self, allocations, coords, cost_matrix, prev_label=None):
         total_cost = sum(
@@ -220,13 +248,15 @@ class NorthwestCornerTransport(Scene):
             ]
             theta = min(minus_vals)
 
+            count = minus_vals.count(theta)
+
             for idx, sign in zip(cycle, signs):
                 if idx in allocations:
                     label = allocations[idx]
                     old_val = int(label.tex_string)
                     new_val = old_val + sign * theta
                     self.play(FadeOut(label))
-                    if new_val > 0:
+                    if new_val > 0 or count > 1:
                         new_label = (
                             Tex(f"{new_val}")
                             .set_color(GREEN)
@@ -235,6 +265,8 @@ class NorthwestCornerTransport(Scene):
                         )
                         allocations[idx] = new_label
                         self.play(Write(new_label))
+
+                        count -= 1
                     else:
                         del allocations[idx]
                 else:
@@ -254,6 +286,19 @@ class NorthwestCornerTransport(Scene):
                 FadeOut(potentials),
             )
 
-        self.play(cost_label.animate.set_color(GREEN))
+        line = Mobject()
+
+        if self.has_extra_demand:
+            line = Line(
+                coords[(0, n - 1)] + 0.5 * UP,
+                coords[(m, n - 1)] + 0.5 * DOWN,
+            )
+        if self.has_extra_supply:
+            line = Line(
+                coords[(m - 1, 0)] + 0.5 * LEFT,
+                coords[(m - 1, n)] + 0.5 * RIGHT,
+            )
+
+        self.play(ShowCreation(line), cost_label.animate.set_color(GREEN))
 
         self.wait(3)
