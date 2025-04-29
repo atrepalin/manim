@@ -84,6 +84,14 @@ def latex_to_svg(
     return full_tex_to_svg(full_tex, compiler, message)
 
 
+def get_path(executable: str):
+    miktex_bin = os.environ.get("MIKTEX_BIN")
+
+    if miktex_bin:
+        return os.path.join(miktex_bin, executable)
+    return executable
+
+
 @cache_on_disk
 def full_tex_to_svg(full_tex: str, compiler: str = "latex", message: str = ""):
     if message:
@@ -107,7 +115,7 @@ def full_tex_to_svg(full_tex: str, compiler: str = "latex", message: str = ""):
         # Run latex compiler
         process = subprocess.run(
             [
-                compiler,
+                get_path(compiler),
                 # "-no-pdf",
                 "-interaction=batchmode",
                 "-halt-on-error",
@@ -132,7 +140,7 @@ def full_tex_to_svg(full_tex: str, compiler: str = "latex", message: str = ""):
         # Run dvisvgm and capture output directly
         process = subprocess.run(
             [
-                "dvisvgm",
+                get_path("dvisvgm"),
                 dvi_path,
                 "-n",  # no fonts
                 "-v", "0",  # quiet

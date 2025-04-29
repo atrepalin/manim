@@ -150,3 +150,6 @@ dmypy.json
 *.exe
 
 videos
+
+miktex
+python
