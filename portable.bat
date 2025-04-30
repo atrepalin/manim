@@ -8,7 +8,7 @@ echo [DONE] Путь установлен в %MIKTEX_BIN%
 echo:
 
 echo [INFO] Установка пути до кеша...
-set CACHE_DIR=%~dp0\cache
+set CACHE_DIR=%~dp0cache
 echo [DONE] Путь установлен в %CACHE_DIR%
 echo:
 
