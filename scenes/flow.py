@@ -1,105 +1,82 @@
-from manimlib import *  # Импорт библиотеки Manim для создания анимаций
-import numpy as np  # Импорт библиотеки NumPy для работы с векторами и массивами
+from manimlib import *  # Импорт библиотеки Manim
+from .methods import compute_positions, create_vertices, create_edges
 
 
-# Функция для вычисления позиций вершин по кругу
-def compute_positions(n, labels, radius=3):
-    angle_step = TAU / n  # Угол между соседними вершинами на окружности
-    return {
-        labels[i]: radius
-        * np.array(
-            [np.cos(i * angle_step), np.sin(i * angle_step), 0]
-        )  # Позиция вершины в 3D-пространстве (X, Y, Z)
-        for i in range(n)
-    }
-
-
-# Функция для создания объектов-вершин и подписей к ним
-def create_vertices(labels, pos):
-    # Создание точек (вершин) на основе вычисленных позиций
-    verts = {
-        name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
-    }  # Синие точки для вершин
-    # Подписи для каждой вершины
-    lbls = {name: Tex(name).next_to(pos[name] * 1.15, ORIGIN) for name in labels}
-    return verts, lbls
-
-
-# === Основной класс сцены с анимацией алгоритма Форда-Фалкерсона ===
 class FordFulkersonFromAdjacency(Scene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
-
         self.adjacency_matrix = adjacency_matrix
-
-        self.n = len(adjacency_matrix)  # Количество вершин в графе
-        self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]
+        self.n = len(adjacency_matrix)  # Количество вершин
+        self.labels = [f"X_{{{i+1}}}" for i in range(self.n)]  # Метки для вершин
 
     def construct(self):
-        pos = compute_positions(self.n, self.labels)  # Позиции вершин
-        verts, v_labels = create_vertices(self.labels, pos)  # Вершины и подписи
-        self.add(*verts.values(), *v_labels.values())  # Отображение на сцене
+        # Вычисление позиций вершин и их отображение
+        pos = compute_positions(self.n, self.labels)
+        verts, v_labels = create_vertices(self.labels, pos)
+        self.add(*verts.values(), *v_labels.values())  # Отображаем вершины
 
-        edges = []  # Список рёбер
-        capacity = {}  # Словарь: (u, v) -> пропускная способность
+        # Создание рёбер на основе матрицы смежности
+        edges = create_edges(self.n, self.labels, self.adjacency_matrix, pos)
+        capacity = {}  # Словарь для хранения пропускных способностей рёбер
+        original_edges = set()  # Множество для рёбер оригинального графа
 
-        # Обработка матрицы смежности для создания рёбер
+        # Заполнение пропускных способностей рёбер и сохранение их
         for i in range(self.n):
             for j in range(self.n):
                 w = self.adjacency_matrix[i][j]
                 if w > 0:
                     u, v = self.labels[i], self.labels[j]
-                    line = Arrow(pos[u], pos[v], buff=0.15, fill_color=GREY)
-                    label = (
-                        Tex(f"0/{w}")
-                        .scale(0.7)
-                        .move_to((pos[u] + pos[v]) / 2 + 0.3 * UP)
-                    )
-                    edges.append((line, (u, v), label))
-                    capacity[(u, v)] = w  # Сохраняем пропускную способность
+                    capacity[(u, v)] = w
+                    original_edges.add((u, v))  # Добавляем ребра в оригинальные рёбра
 
-        # Отображение всех рёбер
-        for line, (_, _), label in edges:
+        # Отображение всех рёбер на сцене
+        for w, line, (_, _), label in edges:
             self.play(ShowCreation(line), Write(label), run_time=0.2)
         self.wait(1)
 
-        # Источник и сток
-        source, sink = self.labels[0], self.labels[-1]
+        source, sink = self.labels[0], self.labels[-1]  # Источник и сток
+        flow = {}  # Словарь для потоков по рёбрам
 
-        flow = {key: 0 for key in capacity}  # Начальный поток на всех рёбрах — 0
-        max_flow = 0  # Общий поток через сеть
+        # Инициализация потоков на рёбрах как 0
+        for u, v in capacity:
+            flow[(u, v)] = 0
+            if (v, u) not in flow:
+                flow[(v, u)] = 0  # Добавляем обратный поток для рёбер
 
-        # Трекер для отображения текущего значения потока
-        max_flow_tracker = ValueTracker(0)
+        max_flow = 0  # Общий максимальный поток
+        max_flow_tracker = ValueTracker(
+            0
+        )  # Трекер для отслеживания максимального потока
         max_flow_label = always_redraw(
             lambda: Tex(
                 f"\\text{{Максимальный поток: }} {int(max_flow_tracker.get_value())}"
-            ).to_corner(UL)
+            ).to_corner(
+                UL
+            )  # Отображение максимального потока
         )
         self.add(max_flow_label)
 
-        # === Поиск пути с помощью BFS (по остаточной сети) ===
+        # Функция для поиска пути с помощью BFS
         def bfs():
-            parent = {}  # Для восстановления пути
-            visited = {source}
-            queue = [source]
+            parent = {}  # Словарь для восстановления пути
+            visited = {source}  # Множество посещённых вершин
+            queue = [source]  # Очередь для BFS
             while queue:
-                u = queue.pop(0)
+                u = queue.pop(0)  # Извлекаем вершину из очереди
                 for v in self.labels:
-                    # Условие: есть положительная остаточная ёмкость
-                    if (
-                        (u, v) in capacity
-                        and v not in visited
-                        and capacity[(u, v)] - flow[(u, v)] > 0
-                    ):
+                    # Если остаточная ёмкость рёбра положительная
+                    residual = capacity.get((u, v), 0) - flow.get((u, v), 0)
+                    if residual > 0 and v not in visited:
                         visited.add(v)
                         parent[v] = u
                         queue.append(v)
-            return parent if sink in parent else None
+            return (
+                parent if sink in parent else None
+            )  # Возвращаем путь, если он существует
 
-        # === Основной цикл алгоритма Форда-Фалкерсона ===
+        # Основной цикл алгоритма Форда-Фалкерсона
         while True:
-            parent = bfs()
+            parent = bfs()  # Находим путь в остаточной сети
             if not parent:  # Если путь не найден — выходим
                 break
 
@@ -108,35 +85,39 @@ class FordFulkersonFromAdjacency(Scene):
             s = sink
             while s != source:
                 u = parent[s]
-                path_flow = min(path_flow, capacity[(u, s)] - flow[(u, s)])
+                residual = capacity.get((u, s), 0) - flow.get((u, s), 0)
+                path_flow = min(path_flow, residual)
                 s = u
 
-            # Обновление потоков вдоль пути
+            # Обновление потока вдоль пути
             s = sink
             while s != source:
                 u = parent[s]
                 flow[(u, s)] += path_flow
-                # Обратный поток (для остаточной сети)
-                flow[(s, u)] = flow.get((s, u), 0) - path_flow
+                if (s, u) not in flow:
+                    flow[(s, u)] = 0
+                flow[(s, u)] -= path_flow  # Обновляем обратный поток
+                if (s, u) not in capacity:
+                    capacity[(s, u)] = 0  # Для корректного расчёта остаточной ёмкости
                 s = u
 
-            # Обновляем общее значение потока
+            # Обновляем общий поток
             max_flow += path_flow
             self.play(max_flow_tracker.animate.set_value(max_flow), run_time=0.4)
 
-            # Обновление подписей и цвета рёбер
+            # Обновление подписей рёбер с учётом потока
             for i in range(len(edges)):
-                line, (u, v), label = edges[i]
-                if (u, v) in flow:
-                    current_flow = flow[(u, v)]
+                _, line, (u, v), label = edges[i]
+                if (u, v) in original_edges:
+                    current_flow = max(flow[(u, v)], 0)
                     cap = capacity[(u, v)]
                     new_text = (
                         Tex(f"{current_flow}/{cap}")
                         .scale(0.7)
-                        .move_to(label.get_center())
+                        .move_to(label.get_center())  # Новый текст с текущим потоком
                     )
 
-                    # Цвет по степени заполненности
+                    # Цвет рёбер в зависимости от текущего потока
                     if current_flow == cap:
                         color = RED
                     elif current_flow > 0:
@@ -148,34 +129,30 @@ class FordFulkersonFromAdjacency(Scene):
                     self.play(
                         Write(new_text), line.animate.set_color(color), run_time=0.2
                     )
-                    edges[i] = (line, (u, v), new_text)
+                    edges[i] = (0, line, (u, v), new_text)
 
         self.wait(1)
 
-        # === Построение минимального разреза ===
-        # Повторный BFS для определения достижимых вершин из источника
-        visited = set()
-        queue = [source]
+        # Построение минимального разреза
+        visited = set()  # Множество для посещённых вершин
+        queue = [source]  # Очередь для BFS
         while queue:
             u = queue.pop(0)
             visited.add(u)
             for v in self.labels:
-                if (
-                    (u, v) in capacity
-                    and v not in visited
-                    and capacity[(u, v)] - flow[(u, v)] > 0
-                ):
+                residual = capacity.get((u, v), 0) - flow.get((u, v), 0)
+                if residual > 0 and v not in visited:
                     queue.append(v)
 
-        # Вершины по разные стороны разреза выделяются цветом
+        # Выделение вершин с двух сторон разреза
         for v in visited:
             verts[v].set_fill(BLUE, opacity=0.5)
         for v in self.labels:
             if v not in visited:
                 verts[v].set_fill(ORANGE, opacity=0.5)
 
-        # Рёбра, пересекающие разрез, выделяются красным
-        for line, (u, v), _ in edges:
+        # Выделение рёбер, пересекающих разрез
+        for _, line, (u, v), _ in edges:
             if u in visited and v not in visited:
                 self.play(line.animate.set_color(RED), run_time=0.2)
 

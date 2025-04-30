@@ -1,48 +1,5 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
-import numpy as np  # Импорт библиотеки NumPy для работы с массивами и математическими вычислениями
-
-
-# Функция для вычисления позиций вершин по кругу
-def compute_positions(n, labels, radius=3):
-    angle_step = TAU / n  # Угол между соседними вершинами на окружности
-    return {
-        labels[i]: radius
-        * np.array(
-            [np.cos(i * angle_step), np.sin(i * angle_step), 0]
-        )  # Позиция вершины в 3D-пространстве (X, Y, Z)
-        for i in range(n)
-    }
-
-
-# Функция для создания объектов-вершин и подписей к ним
-def create_vertices(labels, pos):
-    # Создание точек (вершин) на основе вычисленных позиций
-    verts = {
-        name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
-    }  # Синие точки для вершин
-    # Подписи для каждой вершины
-    lbls = {name: Tex(name).next_to(pos[name] * 1.15, ORIGIN) for name in labels}
-    return verts, lbls
-
-
-# Функция для создания рёбер на основе матрицы смежности
-def create_edges(n, labels, adjacency_matrix, pos):
-    edges = []  # Список для хранения рёбер
-    for i in range(n):
-        for j in range(
-            i + 1, n
-        ):  # Проходим только по верхней треугольной части матрицы (рёбра между разными вершинами)
-            w = adjacency_matrix[i][j]  # Вес ребра между вершинами i и j
-            if w:  # Если вес больше нуля (существует ребро)
-                u, v = labels[i], labels[j]  # Извлекаем метки вершин
-                line = Line(pos[u], pos[v], color=GREY)  # Ребро между вершинами
-                weight_label = Tex(str(w)).move_to(
-                    (pos[u] + pos[v]) / 2 + 0.3 * UP
-                )  # Текст для веса ребра
-                edges.append(
-                    (w, line, (u, v), weight_label)
-                )  # Добавляем в список ребро с его весом
-    return edges
+from .methods import compute_positions, create_vertices, create_arcs
 
 
 # Класс для анимации алгоритма Краскала
@@ -62,7 +19,7 @@ class KruskalFromAdjacency(Scene):
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(
+        edges = create_arcs(
             self.n, self.labels, self.adjacency_matrix, pos
         )  # Создаём рёбра
         # Показ всех рёбер и весов
@@ -153,7 +110,7 @@ class PrimFromAdjacency(Scene):
             *verts.values(), *v_labels.values()
         )  # Добавляем вершины и подписи на сцену
 
-        edges = create_edges(
+        edges = create_arcs(
             self.n, self.labels, self.adjacency_matrix, pos
         )  # Создаём рёбра
         # Показ всех рёбер и весов
