@@ -9,6 +9,7 @@ LIB_NAME = "manimlib"
 PATCH_FILES = {
     "tex_templates.yml": "patches/tex_templates.yml",
     "utils/tex_file_writing.py": "patches/tex_file_writing.py",
+    "utils/directories.py": "patches/directories.py",
 }
 
 

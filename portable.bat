@@ -7,6 +7,11 @@ set MIKTEX_BIN=%~dp0miktex\texmfs\install\miktex\bin\x64
 echo [DONE] Путь установлен в %MIKTEX_BIN%
 echo:
 
+echo [INFO] Установка пути до кеша...
+set CACHE_DIR=%~dp0\cache
+echo [DONE] Путь установлен в %CACHE_DIR%
+echo:
+
 echo [INFO] Установка пути до интерпретатора Python...
 SET PY=%~dp0python\bin\python.exe
 echo [DONE] Путь установлен в %PY%
