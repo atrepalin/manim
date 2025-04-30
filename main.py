@@ -50,6 +50,8 @@ class App(TkinterDnD.Tk):
             ("Транспортная задача", lambda: self.show_table("transport")),
             ("Мин. остовное дерево - Прим", lambda: self.show_table("mst_prim")),
             ("Мин. остовное дерево - Краскал", lambda: self.show_table("mst_kruskal")),
+            ("Кратчайший путь - Дейкстра", lambda: self.show_table("dijkstra")),
+            ("Кратчайший путь - Форд-Беллман", lambda: self.show_table("ford")),
         ]
 
         for text, command in options:
@@ -394,7 +396,13 @@ class App(TkinterDnD.Tk):
                         f"Недопустимое значение '{value}', должно быть числом!"
                     )
 
-        if self.selected_task in ("flow", "mst_prim", "mst_kruskal"):
+        if self.selected_task in (
+            "flow",
+            "mst_prim",
+            "mst_kruskal",
+            "shortest_dijkstra",
+            "shortest_bellman",
+        ):
             if len(matrix) != len(matrix[0]):
                 raise ValueError("Матрица должна быть квадратной!")
         elif self.selected_task == "transport":

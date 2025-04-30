@@ -26,9 +26,28 @@ flow = [
 
 transport = [[8, 6, 10, 9, 20], [9, 7, 4, 2, 30], [3, 4, 2, 5, 25], [10, 25, 20, 20, 0]]
 
+dijkstra = [
+    [0, 12, 9, 0, 0, 14],
+    [0, 0, 10, 15, 0, 0],
+    [0, 1, 0, 11, 0, 2],
+    [0, 0, 2, 0, 6, 0],
+    [0, 0, 7, 0, 0, 9],
+    [0, 0, 0, 0, 0, 0],
+]
+
+ford = [
+    [0, 6, 0, 7, 0],
+    [0, 0, 5, 8, -4],
+    [0, -2, 0, 0, 0],
+    [0, 0, -3, 0, 9],
+    [2, 0, 7, 0, 0],
+]
+
 examples = {
     "mst_prim": convert_to_string(tree),
     "mst_kruskal": convert_to_string(tree),
     "flow": convert_to_string(flow),
     "transport": convert_to_string(transport),
+    "dijkstra": convert_to_string(dijkstra),
+    "ford": convert_to_string(ford),
 }
