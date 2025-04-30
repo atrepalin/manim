@@ -19,7 +19,7 @@ def compute_positions(n, labels, radius=3):
 def create_vertices(labels, pos):
     # Создание точек (вершин) на основе вычисленных позиций
     verts = {
-        name: Dot(pos[name], color=BLUE).scale(1.2) for name in labels
+        name: Dot(pos[name], fill_color=BLUE).scale(1.2) for name in labels
     }  # Синие точки для вершин
     # Подписи для каждой вершины
     lbls = {name: Tex(name).next_to(pos[name] * 1.15, ORIGIN) for name in labels}
@@ -36,7 +36,7 @@ def create_arcs(n, labels, adjacency_matrix, pos):
             w = adjacency_matrix[i][j]  # Вес дуги между вершинами i и j
             if w:  # Если вес больше нуля (существует дуга)
                 u, v = labels[i], labels[j]  # Извлекаем метки вершин
-                line = Line(pos[u], pos[v], color=GREY)  # Дуга между вершинами
+                line = Line(pos[u], pos[v])  # Дуга между вершинами
                 weight_label = Tex(str(w)).move_to(
                     (pos[u] + pos[v]) / 2 + 0.3 * UP
                 )  # Текст для веса дуги
@@ -46,51 +46,60 @@ def create_arcs(n, labels, adjacency_matrix, pos):
     return edges
 
 
+# Функция для создания ориентированных рёбер (стрелок) на основе матрицы смежности
 def create_edges(n, labels, adjacency_matrix, pos):
-    # Подсчёт рёбер для определения двунаправленности
+    # Подсчёт рёбер для определения двунаправленных соединений
     edge_count = defaultdict(int)
     for i in range(n):
         for j in range(n):
             if adjacency_matrix[i][j] != 0:
                 edge_count[(i, j)] += 1
 
-    # Построение рёбер
-    edges = []
+    edges = []  # Список для хранения рёбер (стрелок)
     for i in range(n):
         for j in range(n):
-            w = adjacency_matrix[i][j]
-            if w:
-                u, v = labels[i], labels[j]
-                p1, p2 = pos[u], pos[v]
+            w = adjacency_matrix[i][j]  # Вес ребра между вершинами i и j
+            if w:  # Если вес не ноль (существует ребро)
+                u, v = labels[i], labels[j]  # Метки вершин
+                p1, p2 = pos[u], pos[v]  # Позиции начальной и конечной вершины
 
-                # Проверка на наличие обратного ребра
+                # Проверка: есть ли обратное ребро из j в i (двунаправленность)
                 if (j, i) in edge_count:
+                    # Смещение для дуги, чтобы рёбра не накладывались друг на друга
                     offset = 0.1 * normalize(np.cross(p2 - p1, OUT))
                     p1_shifted = p1 + offset
                     p2_shifted = p2 + offset
+
+                    # Построение дуги между смещёнными точками
                     arc = ArcBetweenPoints(
                         p1_shifted, p2_shifted, angle=0.75, color=WHITE
                     )
+
+                    # Стрелка на конце дуги
                     tip = Triangle(
                         stroke_width=0, fill_color=WHITE, fill_opacity=1
                     ).scale(0.125)
 
-                    # Приближение касательной через разность точек
+                    # Определение направления касательной к дуге в конце (для ориентации стрелки)
                     end_point = arc.point_from_proportion(1)
                     prev_point = arc.point_from_proportion(1 - EPSILON)
                     tangent = normalize(end_point - prev_point)
                     angle = angle_of_vector(tangent)
 
+                    # Размещение и поворот стрелки по направлению касательной
                     tip.move_to(end_point)
                     tip.rotate(angle - PI / 2)
 
-                    arrow = VGroup(arc, tip)
-                    label_pos = arc.point_from_proportion(0.5) + 0.2 * UP
+                    arrow = VGroup(arc, tip)  # Объединение дуги и стрелки
+                    label_pos = (
+                        arc.point_from_proportion(0.5) + 0.2 * UP
+                    )  # Позиция текста веса
                 else:
+                    # Если обратного ребра нет — обычная стрелка
                     arrow = Arrow(p1, p2, buff=0.15)
-                    label_pos = (p1 + p2) / 2 + 0.3 * UP
+                    label_pos = (p1 + p2) / 2 + 0.3 * UP  # Позиция текста веса
 
-                label = Tex(str(w)).scale(0.7).move_to(label_pos)
-                edges.append((w, arrow, (u, v), label))
+                label = Tex(str(w)).scale(0.7).move_to(label_pos)  # Надпись веса
+                edges.append((w, arrow, (u, v), label))  # Добавление ребра в список
 
     return edges
