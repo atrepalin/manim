@@ -139,6 +139,8 @@ class PrimFromAdjacency(Scene):
         frontier = [e for e in edges if e[2][0] == start or e[2][1] == start]
         frontier.sort(key=lambda x: x[0])  # Сортируем рёбра по весу
 
+        rest = [e[1] for e in edges]  # Рёбра, не вошедшие в дерево
+
         # Основной цикл алгоритма Прима
         while len(visited) < self.n:
             w, line, (u, v), _ = frontier.pop(
@@ -147,6 +149,7 @@ class PrimFromAdjacency(Scene):
             new = v if u in visited else u  # Определяем новую вершину
             if new in visited:  # Если вершина уже посещена, пропускаем её
                 continue
+            rest.remove(line)
             sel = Tex(f"add({u},{v})").to_corner(
                 UR
             )  # Подсказка для добавления ребра в остов
@@ -171,5 +174,9 @@ class PrimFromAdjacency(Scene):
 
         final = get_label()
 
-        self.play(FadeTransform(weight_label, final), final.animate.set_color(GREEN))
+        self.play(
+            FadeTransform(weight_label, final),
+            final.animate.set_color(GREEN),
+            *[line.animate.set_color(RED) for line in rest],
+        )
         self.wait(2)
