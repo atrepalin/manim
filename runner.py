@@ -43,6 +43,7 @@ def run(cls: Type[Scene], *args, skip_animations=False, render_to_file=False, **
     try:
         scene.run()
     except Exception as e:
+        print("[ERROR]", e)
         raise e
     finally:
         if "window" in d and (window := d["window"]):

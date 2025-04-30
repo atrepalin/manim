@@ -266,7 +266,8 @@ class NorthwestCornerTransport(Scene):
                         allocations[idx] = new_label
                         self.play(Write(new_label))
 
-                        count -= 1
+                        if new_val == 0:
+                            count -= 1
                     else:
                         del allocations[idx]
                 else:
