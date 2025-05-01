@@ -1,8 +1,9 @@
 from manimlib import *
 from .methods import compute_positions, create_vertices, create_edges
+from .scene import InteractiveScene
 
 
-class BellmanFordFromAdjacency(Scene):
+class BellmanFordFromAdjacency(InteractiveScene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
         self.adjacency_matrix = adjacency_matrix
@@ -78,6 +79,7 @@ class BellmanFordFromAdjacency(Scene):
                 break
 
             self.wait(1)
+            self.pause()
 
         self.play(
             FadeOut(info_box),

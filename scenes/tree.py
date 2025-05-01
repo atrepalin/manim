@@ -1,9 +1,10 @@
 from manimlib import *  # Импорт библиотеки Manim для создания анимаций
 from .methods import compute_positions, create_vertices, create_arcs
+from .scene import InteractiveScene
 
 
 # Класс для анимации алгоритма Краскала
-class KruskalFromAdjacency(Scene):
+class KruskalFromAdjacency(InteractiveScene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
 
@@ -87,6 +88,9 @@ class KruskalFromAdjacency(Scene):
                     line.animate.set_color(RED), run_time=0.3
                 )  # Окрашиваем ребро в красный (не включаем в остов)
 
+            self.wait(1)
+            self.pause()
+
         final = get_label()
 
         self.play(FadeTransform(weight_label, final), final.animate.set_color(GREEN))
@@ -94,7 +98,7 @@ class KruskalFromAdjacency(Scene):
 
 
 # Класс для анимации алгоритма Прима
-class PrimFromAdjacency(Scene):
+class PrimFromAdjacency(InteractiveScene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
 
@@ -171,6 +175,9 @@ class PrimFromAdjacency(Scene):
                         e
                     )  # Добавляем рёбра, которые соединяют посещённые и непосещённые вершины
             frontier.sort(key=lambda x: x[0])  # Сортируем фронтир по весу рёбер
+
+            self.wait(1)
+            self.pause()
 
         final = get_label()
 

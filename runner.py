@@ -4,8 +4,14 @@ from manimlib.config import manim_config
 import copy
 
 
-def run(cls: Type[Scene], *args, skip_animations=False, render_to_file=False, **kwargs):
-
+def run(
+    cls: Type[Scene],
+    *args,
+    skip_animations=False,
+    pausable=False,
+    render_to_file=False,
+    **kwargs,
+):
     d = {
         "show_animation_progress": False,
         "leave_progress_bars": False,
@@ -20,7 +26,6 @@ def run(cls: Type[Scene], *args, skip_animations=False, render_to_file=False, **
     }
 
     if render_to_file:
-
         pre_config = copy.deepcopy(d)
         pre_config["file_writer_config"]["write_to_movie"] = False
         pre_config["file_writer_config"]["save_last_frame"] = False
@@ -35,6 +40,11 @@ def run(cls: Type[Scene], *args, skip_animations=False, render_to_file=False, **
         )
         d["file_writer_config"]["write_to_movie"] = True
     else:
+        d["show_close"] = True
+
+        if pausable and not skip_animations:
+            d["pausable"] = True
+
         window = Window(**manim_config.window)
         d["window"] = window
 

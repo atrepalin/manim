@@ -1,8 +1,9 @@
 from manimlib import *
 from collections import deque
+from .scene import InteractiveScene
 
 
-class NorthwestCornerTransport(Scene):
+class NorthwestCornerTransport(InteractiveScene):
     def __init__(self, matrix, **kwargs):
         super().__init__(**kwargs)
 
@@ -121,6 +122,7 @@ class NorthwestCornerTransport(Scene):
 
         cost_label = self.show_total_cost(allocations, coords, self.cost_matrix)
         self.wait(1)
+        self.pause()
 
         while True:
             # === Потенциалы ===
@@ -286,6 +288,8 @@ class NorthwestCornerTransport(Scene):
                 FadeOut(delta_texts),
                 FadeOut(potentials),
             )
+
+            self.pause()
 
         line = Mobject()
 

@@ -1,8 +1,9 @@
 from manimlib import *  # Импорт библиотеки Manim
 from .methods import compute_positions, create_vertices, create_edges
+from .scene import InteractiveScene
 
 
-class FordFulkersonFromAdjacency(Scene):
+class FordFulkersonFromAdjacency(InteractiveScene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
         self.adjacency_matrix = adjacency_matrix
@@ -130,6 +131,8 @@ class FordFulkersonFromAdjacency(Scene):
                         Write(new_text), line.animate.set_color(color), run_time=0.2
                     )
                     edges[i] = (0, line, (u, v), new_text)
+
+            self.pause()
 
         self.wait(1)
 

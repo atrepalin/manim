@@ -130,17 +130,22 @@ class App(TkinterDnD.Tk):
         ttk.Button(
             self.runner_frame,
             text="Запустить алгоритм",
-            command=partial(self.run_algorithm, False, False),
+            command=partial(self.run_algorithm, False, False, False),
+        ).pack(side="left", padx=5)
+        ttk.Button(
+            self.runner_frame,
+            text="Запустить по шагам",
+            command=partial(self.run_algorithm, False, True, False),
         ).pack(side="left", padx=5)
         ttk.Button(
             self.runner_frame,
             text="Запустить с пропуском анимации",
-            command=partial(self.run_algorithm, True, False),
+            command=partial(self.run_algorithm, True, False, False),
         ).pack(side="left", padx=5)
         ttk.Button(
             self.runner_frame,
             text="Сохранить в файл",
-            command=partial(self.run_algorithm, False, True),
+            command=partial(self.run_algorithm, False, False, True),
         ).pack(side="left", padx=5)
 
         self.rows = 3
@@ -149,7 +154,7 @@ class App(TkinterDnD.Tk):
 
         self.build_table()
 
-    def run_algorithm(self, skip_animations, render_to_file):
+    def run_algorithm(self, skip_animations, pausable, render_to_file):
         matrix = self.get_matrix()
 
         if not render_to_file:
@@ -160,6 +165,7 @@ class App(TkinterDnD.Tk):
                 scenes[self.selected_task],
                 matrix,
                 skip_animations=skip_animations,
+                pausable=pausable,
                 render_to_file=render_to_file,
             )
         except Exception as e:

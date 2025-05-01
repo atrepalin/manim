@@ -1,8 +1,9 @@
 from manimlib import *
 from .methods import compute_positions, create_vertices, create_edges
+from .scene import InteractiveScene
 
 
-class DijkstraFromAdjacency(Scene):
+class DijkstraFromAdjacency(InteractiveScene):
     def __init__(self, adjacency_matrix, **kwargs):
         super().__init__(**kwargs)
         self.adjacency_matrix = adjacency_matrix
@@ -83,6 +84,7 @@ class DijkstraFromAdjacency(Scene):
                     self.play(line.animate.set_color(GREY), run_time=0.2)
 
             self.wait(1)
+            self.pause()
 
         self.play(
             FadeOut(info_box),
