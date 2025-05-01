@@ -47,13 +47,14 @@ def create_arcs(n, labels, adjacency_matrix, pos):
 
 
 # Функция для создания ориентированных рёбер (стрелок) на основе матрицы смежности
-def create_edges(n, labels, adjacency_matrix, pos):
+def create_edges(n, labels, adjacency_matrix, pos, ignore_arcs=False):
     # Подсчёт рёбер для определения двунаправленных соединений
     edge_count = defaultdict(int)
-    for i in range(n):
-        for j in range(n):
-            if adjacency_matrix[i][j] != 0:
-                edge_count[(i, j)] += 1
+    if not ignore_arcs:
+        for i in range(n):
+            for j in range(n):
+                if adjacency_matrix[i][j] != 0:
+                    edge_count[(i, j)] += 1
 
     edges = []  # Список для хранения рёбер (стрелок)
     for i in range(n):
@@ -67,8 +68,9 @@ def create_edges(n, labels, adjacency_matrix, pos):
                 if (j, i) in edge_count:
                     # Смещение для дуги, чтобы рёбра не накладывались друг на друга
                     offset = 0.1 * normalize(np.cross(p2 - p1, OUT))
-                    p1_shifted = p1 + offset
-                    p2_shifted = p2 + offset
+                    norm = 0.2 * normalize(p2 - p1)
+                    p1_shifted = p1 + offset + norm
+                    p2_shifted = p2 + offset - norm
 
                     # Построение дуги между смещёнными точками
                     arc = ArcBetweenPoints(
