@@ -52,6 +52,7 @@ class App(TkinterDnD.Tk):
             ("Мин. остовное дерево - Краскал", lambda: self.show_table("mst_kruskal")),
             ("Кратчайший путь - Дейкстра", lambda: self.show_table("dijkstra")),
             ("Кратчайший путь - Форд-Беллман", lambda: self.show_table("ford")),
+            ("Кратчайший путь - ДП", lambda: self.show_table("dp")),
         ]
 
         for text, command in options:

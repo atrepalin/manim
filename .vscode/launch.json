@@ -15,6 +15,13 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Python Debugger: main.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "main.py",
+      "console": "integratedTerminal"
     }
   ],
   "inputs": [
